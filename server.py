@@ -1,4 +1,4 @@
-from tkinter import *
+from tkinter import Tk, Canvas
 from cryptography.fernet import Fernet
 import json as js
 import http.client as client
@@ -54,10 +54,10 @@ window.pack()
 print ("Ctrl-C to stop program after closing the window")
 
 if __name__ == "__main__":
-    main = Main()
+    m = Main()
 while True:
         try:
-            main.main()
+            m
             tk.update()
             tk.update_idletasks()
         except KeyboardInterrupt:

@@ -1,17 +1,17 @@
-from flask import Flask, render_template, session, url_for, Response, request, redirect
+from flask import Flask, render_template, session, request, redirect, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import hashlib
 import pickle
 
 # initial definitions
-app = Flask(__name__, template_folder=".")
+app = Flask(__name__, template_folder="static")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-with open("/home/brian/LocalPiWebsite/key.db", 'r') as key:
+with open("key.db", 'r') as key:
     app.secret_key = hashlib.sha256(key.read().encode()).hexdigest()
     key.close()
 
@@ -27,26 +27,30 @@ class User(db.Model):
 @app.route("/")
 async def index():
     return render_template("index.html")
-
+@app.route("/styles.css")
+async def styles():
+    return send_from_directory("static", "styles.css")
 @app.route("/login", methods=['GET', 'POST'])
 async def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        data = request.get_json()
+        username = data.get("username")
+        password = data.get("password")
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
         user = User.query.filter_by(username=username, password=hashed_password).first()
         if user:
             session['username'] = username
-            return redirect('/main')
+            return redirect('/')
         else:
             return 'Invalid username or password'
-    return render_template('Login.html')
+    return render_template('login.html')
 
 @app.route("/signup", methods=['GET', 'POST'])
 async def signup():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        data = request.get_json()
+        username = data.get("username")
+        password = data.get("password")
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
         with app.app_context():
             if User.query.filter_by(username=username).first():
@@ -60,7 +64,7 @@ async def signup():
 
 @app.route('/download')
 async def download():
-    return render_template("Download.html")
+    return render_template("download.html")
 
 @app.route('/main', methods = ['GET', "POST"])
 async def main():
@@ -68,7 +72,7 @@ async def main():
         search = request.form.get("search-input")
         results = list()
 
-        with open("/home/brian/LocalPiWebsite/products.db", 'rb') as file:
+        with open("products.db", 'rb') as file:
             products = pickle.loads(file.read())
             file.close()
 
@@ -90,5 +94,5 @@ def init_db():
             db.session.commit()
 
 if __name__ == "__main__":
-    app.run(host="192.168.1.28", port=4444, debug=True)
+    app.run(host="0.0.0.0", port=4444, debug=True)
     init_db()
