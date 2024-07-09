@@ -1,0 +1,17 @@
+{
+  "name": "brian",
+  "version": "1.0.0",
+  "main": "python3 app.py",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "GPLv3",
+  "description": "",
+  "devDependencies": {
+    "daisyui": "^4.12.10",
+    "tailwindcss": "^3.4.4",
+    "watch": "^1.0.2"
+  }
+}

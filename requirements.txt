@@ -1,0 +1,9 @@
+alembic==1.13.1
+cryptography==42.0.6
+fastapi==0.111.0
+Flask==3.0.3
+Flask_Migrate==4.0.7
+flask_sqlalchemy==3.1.1
+pycryptodome==3.20.0
+SQLAlchemy==2.0.30
+uvicorn==0.30.1
