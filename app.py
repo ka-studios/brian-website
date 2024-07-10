@@ -1,8 +1,8 @@
-from flask import Flask, render_template, session, request, redirect, send_from_directory
+from flask import Flask, render_template, session, url_for, Response, request, redirect, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 import hashlib
-import pickle
+import os
 
 # initial definitions
 app = Flask(__name__, template_folder="static")
@@ -34,8 +34,8 @@ async def styles():
 async def login():
     if request.method == 'POST':
         data = request.get_json()
-        username = data.get("username")
-        password = data.get("password")
+        username = data.get('username')
+        password = data.get('password')
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
         user = User.query.filter_by(username=username, password=hashed_password).first()
         if user:
@@ -48,13 +48,12 @@ async def login():
 @app.route("/signup", methods=['GET', 'POST'])
 async def signup():
     if request.method == 'POST':
-        data = request.get_json()
-        username = data.get("username")
-        password = data.get("password")
+        username = request.form['username']
+        password = request.form['password']
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
         with app.app_context():
             if User.query.filter_by(username=username).first():
-                return "Username is already taken"
+                return render_template("usernamePasswordTaken.html")
             else:
                 new_user = User(username=username, password=hashed_password)
                 db.session.add(new_user)
@@ -68,21 +67,26 @@ async def download():
 
 @app.route('/main', methods = ['GET', "POST"])
 async def main():
-    if request.method == "POST":
-        search = request.form.get("search-input")
-        results = list()
-
-        with open("products.db", 'rb') as file:
-            products = pickle.loads(file.read())
-            file.close()
-
-        for item in products.keys():
-            if search in item:
-                results.append(item)
-                request.form["image"].__setattr__["src"]    = products[item][0]
-                request.form["image"].__setattr__["hidden"] = False
-
     return render_template("main.html")
+
+@app.route('/learn/Math')
+async def math():
+    return render_template("Math.html")
+
+@app.route('/learn/ComputerScience')
+async def computer_science():
+    return render_template("ComputerScience.html")
+
+@app.errorhandler(404)
+async def page_not_found_error(e):
+    return render_template("404.html")
+
+@app.route('/downloadzip')
+async def downloadzip():
+    return send_from_directory("static", "app.zip")
+@app.route('/favicon.ico')
+async def favicon():
+    return send_from_directory("static", "favicon.ico")
 
 def init_db():
     with app.app_context():
